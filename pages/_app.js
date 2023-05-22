@@ -33,7 +33,7 @@ const { chains, provider } = configureChains(
     polygonZkEvm,
     polygonZkEvmTestnet
 	],
-	[alchemyProvider({ apiKey: process.env.ALCHEMY_API_KEY }), publicProvider()]
+	[alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY }), publicProvider()]
 );
 
 const { connectors } = getDefaultWallets({
@@ -56,6 +56,7 @@ function MyApp({ Component, pageProps }) {
 			if (!isReconnected) router.reload();
 		},
 	});
+	// console.log(process.env.NEXT_PUBLIC_ALCHEMY_API_KEY);
 	return (
 		<WagmiConfig client={wagmiClient}>
 			<RainbowKitProvider

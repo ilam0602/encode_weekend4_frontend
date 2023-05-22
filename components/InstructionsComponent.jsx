@@ -4,6 +4,7 @@ import {useSigner, useNetwork, useBalance,useContract,useContractWrite,usePrepar
 import {useState,useEffect} from 'react'
 import * as tokenJson from '../assets/MyERC20Votes.json'
 import * as ballotJson from '../assets/TokenizedBallot.json'
+import {ethers} from 'ethers'
 import ReadWinner from "./ReadWinner";
 
 export default function InstructionsComponent() {
@@ -17,9 +18,15 @@ export default function InstructionsComponent() {
 			</header>
 			<RequestTokens></RequestTokens>
 			<Delegate></Delegate>
-			{/* <Query></Query> */}
-			{/* <Proposal></Proposal> */}
-			<ReadWinner />
+			<Proposal propnum = {0}/>
+			<Vote propnum = {0}/>
+			<Proposal propnum = {1}/>
+			<Vote propnum = {1}/>
+			<Proposal propnum = {2}/>
+			<Vote propnum = {2}/>
+			<VotingPower/>
+			<WinningProposal/>
+			{/* <ReadWinner /> */}
 		</div>
 	);
 }
@@ -70,81 +77,142 @@ function Delegate(){
 		args: ['0xBB923B99A0067e8ae37533898B849d67B8f3268e']
 	});
 
-	if(signer){
-		console.log(signer.address);
-	}
 	
 	// const { delegate } = useContractWrite(config);
 
 	return(
 		<div>
-			<button onClick={() => write()}>Feed</button>
+			<button onClick={() => write()}>Delegate</button>
 			{isLoading && <div>Check Wallet</div>}
 			{isSuccess && <div>Transaction: {JSON.stringify(data)}</div>}
 		</div>
 	)
 }
 
-function Query(){
+
+function Proposal({propnum}){
 	const {data:signer} = useSigner();
 
 	const [txData,setTxData] = useState(null);
-	// const [isLoading,setLoading] = useState(false);
-	// console.log(tokenJson.abi);
-	const {data,isLoading,isSuccess,refetch} = useContractRead({
-		address: '0x8581C8307D0F2D79b235c64F87C01C4C7aabb94d',
-		abi: ballotJson.abi,
-		functionName: 'winningProposal',
-		args: []
-	});
+	const [isMounted,setIsMounted] = useState(false);
 
-	if(signer){
-		console.log(signer.address);
-	}
-	console.log(data);
-	
-	// const { delegate } = useContractWrite(config);
 
-	return(
-		<div>
-			<button onClick={() => refetch()}>Check Winner</button>
-			{isLoading && <div>Checking Winner</div>}
-			{isSuccess && <div>Winner: {JSON.stringify(data)}</div>}
-		</div>
-	)
-
-}
-
-function Proposal(){
-	const {data:signer} = useSigner();
-
-	const [txData,setTxData] = useState(null);
-	// const [isLoading,setLoading] = useState(false);
-	// console.log(tokenJson.abi);
-	const {data,isLoading,isSuccess,refetch} = useContractRead({
+	const {data,isLoading,isSuccess} = useContractRead({
 		address: '0x8581C8307D0F2D79b235c64F87C01C4C7aabb94d',
 		abi: ballotJson.abi,
 		functionName: 'proposals',
-		args: [0]
+		args: [propnum],
+		watch:true,
+		onError(error) {
+			console.log('Error', error)
+		  },
 	});
 
-	if(signer){
-		console.log(signer.address);
-	}
-	console.log(data);
+	useEffect(()=>{
+		setIsMounted(true);
+	},[]);
+
+	
+	
+
+	return(
+		<div>
+			{!isMounted || isLoading && <div>Loading Proposal {propnum} </div>}
+			{isMounted&&isSuccess && <div>Proposal {propnum}: {ethers.utils.parseBytes32String(data.name)}</div>}
+		</div>
+	)
+
+}
+function VotingPower(){
+	const {data:signer} = useSigner();
+
+	const [txData,setTxData] = useState(null);
+	const [isMounted,setIsMounted] = useState(false);
+
+
+	const {data,isLoading,isSuccess} = useContractRead({
+		address: '0x8581C8307D0F2D79b235c64F87C01C4C7aabb94d',
+		abi: ballotJson.abi,
+		functionName: 'votingPower',
+		args: [signer?._address],
+		watch:true,
+		onError(error) {
+			console.log('Error', error)
+		  },
+	});
+
+	useEffect(()=>{
+		setIsMounted(true);
+	},[]);
+
+	
+	// console.log(data._hex);
+	
+
+	return(
+		<div>
+			{!isMounted || isLoading && <div>Loading Voting Power {signer._address} </div>}
+			{isMounted&&isSuccess && <div> Voting Power: { ethers.utils.formatUnits(parseInt(data._hex).toString())}</div>}
+		</div>
+	)
+
+}
+function Vote({propnum}){
+	const {data:signer} = useSigner();
+
+	const [txData,setTxData] = useState(null);
+	// const [isLoading,setLoading] = useState(false);
+	// console.log(tokenJson.abi);
+	const {data,isLoading,isSuccess,write} = useContractWrite({
+		address: '0x8581C8307D0F2D79b235c64F87C01C4C7aabb94d',
+		abi: ballotJson.abi,
+		functionName: 'vote',
+		args: [propnum,ethers.utils.parseUnits('1')]
+	});
+
 	
 	// const { delegate } = useContractWrite(config);
 
 	return(
 		<div>
-			{isLoading && <div>Checking Proposal 0 </div>}
-			{isSuccess && <div>Proposal 0: {JSON.stringify(data)}</div>}
+			<button onClick={() => write()}>Vote</button>
+			{isLoading && <div>Check Wallet</div>}
+			{isSuccess && <div>Transaction: {JSON.stringify(data)}</div>}
 		</div>
 	)
 
 }
+function WinningProposal(){
+	const {data:signer} = useSigner();
 
-function Vote(){
+	const [txData,setTxData] = useState(null);
+	const [isMounted,setIsMounted] = useState(false);
+
+
+	const {data,isLoading,isSuccess} = useContractRead({
+		address: '0x8581C8307D0F2D79b235c64F87C01C4C7aabb94d',
+		abi: ballotJson.abi,
+		functionName: 'winnerName',
+		watch:true,
+		onError(error) {
+			console.log('Error', error)
+		  },
+	});
+
+	useEffect(()=>{
+		setIsMounted(true);
+	},[]);
+
+	
+	// console.log(data._hex);
+	
+
+	return(
+		<div>
+			{!isMounted || isLoading && <div>Loading Voting Power {signer._address} </div>}
+			{isMounted&&isSuccess && <div> Current Winning Proposal: { ethers.utils.parseBytes32String(data)}</div>}
+		</div>
+	)
 
 }
 
