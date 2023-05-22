@@ -4,6 +4,8 @@ import {useSigner, useNetwork, useBalance,useContract,useContractWrite,usePrepar
 import {useState,useEffect} from 'react'
 import * as tokenJson from '../assets/MyERC20Votes.json'
 import * as ballotJson from '../assets/TokenizedBallot.json'
+import ReadWinner from "./ReadWinner";
+
 export default function InstructionsComponent() {
 	const router = useRouter();
 	return (
@@ -16,7 +18,8 @@ export default function InstructionsComponent() {
 			<RequestTokens></RequestTokens>
 			<Delegate></Delegate>
 			{/* <Query></Query> */}
-			<Proposal></Proposal>
+			{/* <Proposal></Proposal> */}
+			<ReadWinner />
 		</div>
 	);
 }
