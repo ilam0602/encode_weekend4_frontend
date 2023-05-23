@@ -1,7 +1,7 @@
-import {useState} from 'react';
 import {useSigner,useContractWrite} from 'wagmi'
 import * as ballotJson from '../assets/TokenizedBallot.json'
-import {ethers} from 'ethers'
+import {ethers} from 'ethers';
+import styles from '../styles/InstructionsComponent.module.css';
 
 export default function Vote({propnum}){
 	const {data:signer} = useSigner();
@@ -17,7 +17,7 @@ export default function Vote({propnum}){
 
 	return(
 		<div>
-			<button onClick={() => write()}>Vote</button>
+			<button onClick={() => write()} className={styles.button}>Vote</button>
 			{isLoading && <div>Check Wallet</div>}
 			{isSuccess && <div>Transaction: {JSON.stringify(data)}</div>}
 		</div>

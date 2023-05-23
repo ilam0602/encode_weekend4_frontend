@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useSigner } from "wagmi";
 import styles from "../styles/InstructionsComponent.module.css";
 
-export default function RequestTokens() {
+export default function RequestRole() {
   const { data: signer } = useSigner();
   const [txData, setTxData] = useState(null);
   const [isLoading, setLoading] = useState(false);
   if (txData)
     return (
-      <div className={styles.request_button}>
+      <div>
         <p>Transaction Completed!</p>
         <a
           href={"https://goerli.etherscan.io/tx/" + txData.hash}
@@ -19,30 +19,27 @@ export default function RequestTokens() {
         </a>
       </div>
     );
-  if (isLoading)
-    return (
-      <p className={styles.request_button}>Requesting tokens to be minted...</p>
-    );
+  if (isLoading) return <p> Requesting role...</p>;
   return (
-    <div className={styles.request_button}>
+    <div>
       <button
-        onClick={() => requestTokens(signer, "signature", setLoading, setTxData)}
+        onClick={() => requestRole(signer, "signature", setLoading, setTxData)}
         className={styles.button}
       >
-        Request Tokens
+        Request Role
       </button>
     </div>
   );
 }
 
-function requestTokens(signer, signature, setLoading, setTxData) {
+function requestRole(signer, signature, setLoading, setTxData) {
   setLoading(true);
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ address: signer._address, signature: signature }),
   };
-  fetch("http://localhost:3001/request-tokens", requestOptions)
+  fetch("http://localhost:3001/request-role", requestOptions)
     .then((response) => response.json())
     .then((data) => {
       setTxData(data);
