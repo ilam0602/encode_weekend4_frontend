@@ -1,6 +1,6 @@
 import styles from "../styles/InstructionsComponent.module.css";
 import Router, { useRouter } from "next/router";
-import {useSigner, useNetwork, useBalance,useContract,useContractWrite,usePrepareContractWrite,useContractRead} from 'wagmi';
+import {useSigner,useContractWrite,useContractRead} from 'wagmi';
 import {useState,useEffect} from 'react'
 import * as tokenJson from '../assets/MyERC20Votes.json'
 import * as ballotJson from '../assets/TokenizedBallot.json'
@@ -67,21 +67,18 @@ function requestTokens(signer,signature,setLoading,setTxData){
 function Delegate(){
 	const {data:signer} = useSigner();
 
-	const [txData,setTxData] = useState(null);
-	// const [isLoading,setLoading] = useState(false);
-	// console.log(tokenJson.abi);
+	const [address,setAddress] = useState(null);
+
 	const {data,isLoading,isSuccess,write} = useContractWrite({
 		address: '0xBd8D607d146aC196051280d4Cb7952D95dA6F3bd',
 		abi: tokenJson.abi,
 		functionName: 'delegate',
-		args: ['0xBB923B99A0067e8ae37533898B849d67B8f3268e']
+		args: [address]
 	});
-
-	
-	// const { delegate } = useContractWrite(config);
 
 	return(
 		<div>
+			<input type = "text" value = {address} onChange = {e => setAddress(e.target.value)}></input>
 			<button onClick={() => write()}>Delegate</button>
 			{isLoading && <div>Check Wallet</div>}
 			{isSuccess && <div>Transaction: {JSON.stringify(data)}</div>}
@@ -93,7 +90,6 @@ function Delegate(){
 function Proposal({propnum}){
 	const {data:signer} = useSigner();
 
-	const [txData,setTxData] = useState(null);
 	const [isMounted,setIsMounted] = useState(false);
 
 
@@ -126,7 +122,6 @@ function Proposal({propnum}){
 function VotingPower(){
 	const {data:signer} = useSigner();
 
-	const [txData,setTxData] = useState(null);
 	const [isMounted,setIsMounted] = useState(false);
 
 
@@ -146,12 +141,11 @@ function VotingPower(){
 	},[]);
 
 	
-	// console.log(data._hex);
 	
 
 	return(
 		<div>
-			{!isMounted || isLoading && <div>Loading Voting Power {signer._address} </div>}
+			{!isMounted || isLoading && signer&&<div>Loading Voting Power {signer._address} </div>}
 			{isMounted&&isSuccess && <div> Voting Power: { ethers.utils.formatUnits(parseInt(data._hex).toString())}</div>}
 		</div>
 	)
@@ -160,9 +154,6 @@ function VotingPower(){
 function Vote({propnum}){
 	const {data:signer} = useSigner();
 
-	const [txData,setTxData] = useState(null);
-	// const [isLoading,setLoading] = useState(false);
-	// console.log(tokenJson.abi);
 	const {data,isLoading,isSuccess,write} = useContractWrite({
 		address: '0x8581C8307D0F2D79b235c64F87C01C4C7aabb94d',
 		abi: ballotJson.abi,
@@ -171,7 +162,6 @@ function Vote({propnum}){
 	});
 
 	
-	// const { delegate } = useContractWrite(config);
 
 	return(
 		<div>
@@ -185,7 +175,6 @@ function Vote({propnum}){
 function WinningProposal(){
 	const {data:signer} = useSigner();
 
-	const [txData,setTxData] = useState(null);
 	const [isMounted,setIsMounted] = useState(false);
 
 
@@ -209,7 +198,7 @@ function WinningProposal(){
 
 	return(
 		<div>
-			{!isMounted || isLoading && <div>Loading Voting Power {signer._address} </div>}
+			{!isMounted || isLoading && signer &&<div>Loading Voting Power {signer._address} </div>}
 			{isMounted&&isSuccess && <div> Current Winning Proposal: { ethers.utils.parseBytes32String(data)}</div>}
 		</div>
 	)
